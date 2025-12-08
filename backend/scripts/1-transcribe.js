@@ -1,5 +1,6 @@
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
 import { promisify } from 'util';
+import { exec } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -13,7 +14,7 @@ const SUBTITLE_PATH = path.join(SUBTITLE_DIR, 'kurtlar-vadisi-ep1.srt');
 const TEMP_DIR = path.join(__dirname, '../../data/temp');
 
 // Configuration
-const TEST_MODE = true; // Set to true to transcribe a sample segment
+const TEST_MODE = false; // Set to true to transcribe a sample segment
 const TEST_START_TIME = 120; // Start at 2:00 (2 minutes * 60 seconds)
 const TEST_DURATION = 600; // Extract 10 minutes (from 2:00 to 12:00)
 
@@ -21,9 +22,9 @@ const TEST_DURATION = 600; // Extract 10 minutes (from 2:00 to 12:00)
 const WHISPER_MODEL = 'large-v3'; // Options: tiny, base, small, medium, large-v2, large-v3
 const USE_GPU = false; // Set to true for CUDA GPU acceleration (requires NVIDIA GPU)
 const COMPUTE_TYPE = 'int8'; // Options: int8, float16, float32 (int8 is fastest for CPU)
-const BEAM_SIZE = 5; // Higher = more accurate but slower (1-10, default: 5)
+const BEAM_SIZE = 10; // Higher = more accurate but slower (1-10, default: 5)
 const NUM_WORKERS = 8; // M1 Pro has 8-10 cores, use 8 for optimal performance
-const VAD_THRESHOLD = 0.5; // Voice Activity Detection threshold (0.0-1.0, higher = more aggressive silence skipping)
+const VAD_THRESHOLD = 0.3; // Voice Activity Detection threshold (0.0-1.0, higher = more aggressive silence skipping)
 const MIN_SILENCE_DURATION = 500; // Minimum silence duration in ms to skip (lower = faster but may cut speech)
 
 async function transcribe() {
@@ -43,10 +44,6 @@ async function transcribe() {
 				TEST_DURATION / 60
 			} minutes (${startMin}:00 to ${endMin}:00)`
 		);
-		console.log('This should take 1-3 minutes.\n');
-	} else {
-		console.log('\nThis may take 5-15 minutes for a 40-minute episode.');
-		console.log('(Much faster than openai-whisper!)\n');
 	}
 
 	// Check if video exists
@@ -200,14 +197,36 @@ except Exception as e:
 		console.log('🚀 Running faster-whisper transcription...\n');
 		const startTime = Date.now();
 
-		const { stdout, stderr } = await execAsync(`python3 "${tempScriptPath}"`, {
-			maxBuffer: 10 * 1024 * 1024,
+		// Use spawn instead of exec for real-time output streaming
+		await new Promise((resolve, reject) => {
+			const pythonProcess = spawn('python3', [tempScriptPath]);
+
+			// Stream stdout in real-time
+			pythonProcess.stdout.on('data', (data) => {
+				process.stdout.write(data.toString());
+			});
+
+			// Stream stderr in real-time
+			pythonProcess.stderr.on('data', (data) => {
+				process.stderr.write(data.toString());
+			});
+
+			// Handle process completion
+			pythonProcess.on('close', (code) => {
+				if (code !== 0) {
+					reject(new Error(`Python process exited with code ${code}`));
+				} else {
+					resolve();
+				}
+			});
+
+			// Handle process errors
+			pythonProcess.on('error', (error) => {
+				reject(error);
+			});
 		});
 
 		const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-
-		console.log(stdout);
-		if (stderr) console.error('Warnings:', stderr);
 
 		// Clean up temp script
 		fs.unlinkSync(tempScriptPath);
@@ -231,16 +250,6 @@ except Exception as e:
 					TEST_DURATION / 60
 				} minutes (${startMin}:00 to ${endMin}:00)`
 			);
-			console.log('\n💡 To test different quality levels:');
-			console.log(
-				'   - Change WHISPER_MODEL to: tiny, base, small, medium, large-v2, large-v3'
-			);
-			console.log('   - Set USE_GPU = true if you have NVIDIA GPU with CUDA');
-			console.log('   - Set COMPUTE_TYPE to float16 for better quality (slower)');
-			console.log('   - Adjust NUM_WORKERS (current: 8 for M1 Pro)');
-			console.log('   - Adjust BEAM_SIZE (1=fastest, 5=balanced, 10=most accurate)');
-			console.log('   - Adjust VAD_THRESHOLD (0.3=less aggressive, 0.7=more aggressive)');
-			console.log('   - Set TEST_MODE = false to transcribe full video');
 		}
 		console.log(
 			'\n⚠️  IMPORTANT: Please review and manually correct the subtitle file before proceeding!'
@@ -252,19 +261,6 @@ except Exception as e:
 		console.log('\n➡️  Next step: Run "npm run process-clips"');
 	} catch (error) {
 		console.error('❌ Transcription failed:', error.message);
-
-		// Enhanced troubleshooting
-		console.log('\n🔧 Troubleshooting:');
-		console.log('1. Install faster-whisper: pip3 install faster-whisper');
-		console.log('2. Install FFmpeg: brew install ffmpeg (macOS) or apt install ffmpeg (Linux)');
-		console.log('3. Verify video exists at:', VIDEO_PATH);
-		console.log('4. Try smaller model: Set WHISPER_MODEL = "small" or "base"');
-		console.log('5. Try CPU only: Set USE_GPU = false');
-		console.log('6. For GPU: pip3 install faster-whisper[cuda] (NVIDIA only)');
-		console.log('7. Check Python: python3 -c "from faster_whisper import WhisperModel"');
-		console.log('\n💡 Model sizes (smallest to largest):');
-		console.log('   tiny < base < small < medium < large-v2 < large-v3');
-		console.log('   (larger = better quality but slower)');
 		process.exit(1);
 	}
 }
