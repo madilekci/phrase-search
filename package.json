@@ -1,0 +1,23 @@
+{
+  "name": "turkish-phrase-search",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Search and watch Turkish TV series phrases with auto-generated video clips",
+  "scripts": {
+    "transcribe": "node backend/scripts/1-transcribe.js",
+    "process-clips": "node backend/scripts/2-process-clips.js",
+    "populate-db": "node backend/scripts/3-populate-db.js",
+    "dev": "node backend/src/server.js",
+    "rebuild-sqlite": "npm rebuild better-sqlite3"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "better-sqlite3": "^11.5.0",
+    "cors": "^2.8.5",
+    "fluent-ffmpeg": "^2.1.3",
+    "subtitle": "^4.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}

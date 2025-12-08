@@ -1,0 +1,7 @@
+node_modules/
+data/original/*.mp4
+data/clips/
+backend/database.db
+.DS_Store
+*.log
+.env
