@@ -197,9 +197,12 @@ except Exception as e:
 		console.log('🚀 Running faster-whisper transcription...\n');
 		const startTime = Date.now();
 
+		// Use conda Python explicitly (faster-whisper is installed in conda base environment)
+		const pythonCommand = '/opt/anaconda3/bin/python3';
+
 		// Use spawn instead of exec for real-time output streaming
 		await new Promise((resolve, reject) => {
-			const pythonProcess = spawn('python3', [tempScriptPath]);
+			const pythonProcess = spawn(pythonCommand, [tempScriptPath]);
 
 			// Stream stdout in real-time
 			pythonProcess.stdout.on('data', (data) => {
