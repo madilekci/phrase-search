@@ -3,12 +3,12 @@
 ## Project Overview
 A video phrase search engine for Turkish TV series (Kurtlar Vadisi). Users search Turkish phrases and watch auto-generated 8-9 second video clips with context.
 
-**Tech Stack**: Node.js (ES modules), Express, SQLite (better-sqlite3), Vanilla JS, FFmpeg, Whisper AI
+**Tech Stack**: Node.js (ES modules), Express, SQLite (better-sqlite3), Vanilla JS, FFmpeg, faster-whisper
 
 ## Architecture & Data Flow
 
 ### Three-Stage Pipeline (Scripts Run Once)
-1. **Transcription** (`backend/scripts/1-transcribe.js`) - Whisper CLI generates SRT subtitles from video
+1. **Transcription** (`backend/scripts/1-transcribe.js`) - faster-whisper generates SRT subtitles from video
 2. **Clip Processing** (`backend/scripts/2-process-clips.js`) - FFmpeg cuts video into subtitle-aligned clips
 3. **Database Population** (`backend/scripts/3-populate-db.js`) - Reads `clips-metadata.json`, inserts into SQLite
 
@@ -39,7 +39,7 @@ All files use `import`/`export` syntax. `package.json` has `"type": "module"`.
 ```bash
 # 1. Place video in data/original/ (rename to kurtlar-vadisi-ep1.mp4)
 # 2. Run pipeline in order:
-npm run transcribe      # 10-20 min, review SRT output manually
+npm run transcribe      # 5-15 min (faster with faster-whisper!), review SRT output manually
 npm run process-clips   # 1-2 hours, creates data/clips/ + clips-metadata.json
 npm run populate-db     # < 1 min, creates backend/database.db
 ```
@@ -83,7 +83,7 @@ npm run dev  # Starts server on port 3000, no build step
 
 ## External Dependencies
 
-- **Whisper** (Python): Installed via `pip3 install openai-whisper`. Uses `small` model for Turkish.
+- **faster-whisper** (Python): Installed via `pip3 install faster-whisper`. Uses `large-v3` model for Turkish. Much faster than openai-whisper with similar accuracy.
 - **FFmpeg**: Homebrew install on macOS. Used for clip extraction and video transcoding.
 
 ## Future Improvements (Not Implemented)

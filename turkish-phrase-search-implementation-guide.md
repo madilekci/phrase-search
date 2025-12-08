@@ -3,7 +3,7 @@
 ## Project Overview
 A minimal web app to search for phrases in Kurtlar Vadisi Episode 1 and watch 8-9 second video clips.
 
-**Tech Stack**: Node.js, Express, SQLite, Vanilla JavaScript, FFmpeg, Whisper
+**Tech Stack**: Node.js, Express, SQLite, Vanilla JavaScript, FFmpeg, faster-whisper
 
 **⚠️ IMPLEMENTATION APPROACH**: We will verify each step works before proceeding to the next.
 
@@ -18,7 +18,7 @@ turkish-phrase-search/
 ├── .gitignore
 ├── backend/
 │   ├── scripts/
-│   │   ├── 1-transcribe.js        # Generate subtitles with Whisper
+│   │   ├── 1-transcribe.js        # Generate subtitles with faster-whisper
 │   │   ├── 2-process-clips.js     # Cut video into clips based on subtitles
 │   │   └── 3-populate-db.js       # Insert phrases into database
 │   ├── src/
@@ -56,13 +56,13 @@ brew install ffmpeg
 # Install Python 3.8+ (macOS)
 brew install python3
 
-# Install OpenAI Whisper (macOS)
-pip3 install openai-whisper
+# Install faster-whisper (macOS)
+pip3 install faster-whisper
 
 # Verify installations
 python3 --version
 ffmpeg -version
-whisper --help
+python3 -c "from faster_whisper import WhisperModel; print('faster-whisper installed successfully')"
 ```
 
 ### Node.js Dependencies
@@ -137,18 +137,76 @@ const VIDEO_PATH = path.join(__dirname, '../../data/original/kurtlar-vadisi-ep1.
 const SUBTITLE_PATH = path.join(__dirname, '../../data/subtitles/kurtlar-vadisi-ep1.srt');
 
 async function transcribe() {
-  console.log('🎬 Starting transcription with Whisper...');
-  console.log('This may take 10-20 minutes for a 40-minute episode.\n');
+  console.log('🎬 Starting transcription with faster-whisper...');
+  console.log('This may take 5-15 minutes for a 40-minute episode (much faster than openai-whisper!).\n');
 
   try {
-    // Run Whisper CLI
-    const command = `whisper "${VIDEO_PATH}" --model small --language Turkish --output_format srt --output_dir "${path.dirname(SUBTITLE_PATH)}"`;
+    // Create a temporary Python script to run faster-whisper
+    const pythonScript = `
+from faster_whisper import WhisperModel
+import sys
 
-    console.log('Running command:', command);
-    const { stdout, stderr } = await execAsync(command);
+model_size = "large-v3"
+model = WhisperModel(model_size, device="cpu", compute_type="int8")
+
+segments, info = model.transcribe("${VIDEO_PATH}", language="tr", beam_size=5)
+
+print(f"Detected language '{info.language}' with probability {info.language_probability}")
+
+# Generate SRT format
+srt_content = []
+segment_id = 1
+
+for segment in segments:
+    start_time = segment.start
+    end_time = segment.end
+    text = segment.text.strip()
+
+    # Convert seconds to SRT time format (HH:MM:SS,mmm)
+    def format_timestamp(seconds):
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = int(seconds % 60)
+        millis = int((seconds % 1) * 1000)
+        return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
+
+    srt_content.append(str(segment_id))
+    srt_content.append(f"{format_timestamp(start_time)} --> {format_timestamp(end_time)}")
+    srt_content.append(text)
+    srt_content.append("")
+    segment_id += 1
+
+# Write SRT file
+with open("${SUBTITLE_PATH}", "w", encoding="utf-8") as f:
+    f.write("\\n".join(srt_content))
+
+print(f"\\nTranscription complete! Saved to ${SUBTITLE_PATH}")
+`;
+
+    const tempScriptPath = path.join(__dirname, '../../data/temp/transcribe.py');
+
+    // Ensure temp directory exists
+    const tempDir = path.dirname(tempScriptPath);
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    // Write Python script
+    fs.writeFileSync(tempScriptPath, pythonScript);
+
+    console.log('Running faster-whisper transcription...');
+    console.log('Model: large-v3 (best quality for Turkish)');
+    console.log('Device: CPU with int8 quantization (optimized for speed)\n');
+
+    const { stdout, stderr } = await execAsync(`python3 "${tempScriptPath}"`, {
+      maxBuffer: 10 * 1024 * 1024
+    });
 
     console.log(stdout);
     if (stderr) console.error('Warnings:', stderr);
+
+    // Clean up temp script
+    fs.unlinkSync(tempScriptPath);
 
     console.log('\n✅ Transcription complete!');
     console.log(`📄 Subtitle file created: ${SUBTITLE_PATH}`);
@@ -161,9 +219,10 @@ async function transcribe() {
   } catch (error) {
     console.error('❌ Transcription failed:', error.message);
     console.log('\nTroubleshooting:');
-    console.log('1. Make sure Whisper is installed: pip3 install openai-whisper');
+    console.log('1. Make sure faster-whisper is installed: pip3 install faster-whisper');
     console.log('2. Make sure video file exists at:', VIDEO_PATH);
-    console.log('3. Try with smaller model: --model small');
+    console.log('3. For GPU support, install: pip3 install faster-whisper[cuda]');
+    console.log('4. Try smaller model: change model_size to "medium" or "small"');
   }
 }
 
@@ -998,7 +1057,7 @@ npm run dev
 ## Testing Checklist
 
 - [ ] Video file placed in `data/original/` folder
-- [ ] Whisper installed (`pip3 install openai-whisper`)
+- [ ] faster-whisper installed (`pip3 install faster-whisper`)
 - [ ] FFmpeg installed (`brew install ffmpeg`)
 - [ ] Node.js dependencies installed (`npm install`)
 - [ ] Subtitles generated and reviewed
@@ -1014,14 +1073,17 @@ npm run dev
 
 ## Troubleshooting
 
-### Whisper Installation Issues
+### faster-whisper Installation Issues
 ```bash
-# If Whisper fails to install
+# If faster-whisper fails to install
 pip3 install --upgrade pip
-pip3 install openai-whisper --no-cache-dir
+pip3 install faster-whisper --no-cache-dir
+
+# For GPU support (NVIDIA)
+pip3 install faster-whisper[cuda]
 
 # Or use conda
-conda install -c conda-forge openai-whisper
+conda install -c conda-forge faster-whisper
 ```
 
 ### FFmpeg Issues
@@ -1164,7 +1226,7 @@ This project is for **personal/educational use only**.
 ## Support & Resources
 
 ### Helpful Links
-- [Whisper Documentation](https://github.com/openai/whisper)
+- [faster-whisper Documentation](https://github.com/SYSTRAN/faster-whisper)
 - [FFmpeg Documentation](https://ffmpeg.org/documentation.html)
 - [Better SQLite3 Docs](https://github.com/WiseLibs/better-sqlite3)
 - [Express.js Guide](https://expressjs.com/)

@@ -13,31 +13,36 @@ const SUBTITLE_PATH = path.join(SUBTITLE_DIR, 'kurtlar-vadisi-ep1.srt');
 const TEMP_DIR = path.join(__dirname, '../../data/temp');
 
 // Configuration
-const TEST_MODE = false; // Set to true to transcribe a sample segment
+const TEST_MODE = true; // Set to true to transcribe a sample segment
 const TEST_START_TIME = 480; // Start at 8:00 (8 minutes * 60 seconds)
 const TEST_DURATION = 120; // Extract 2 minutes (from 8:00 to 10:00)
-const WHISPER_MODEL = 'large'; // Options: tiny, base, small, medium, large
 
-// Performance Configuration
-const USE_GPU = true; // Set to true to use GPU (Apple Silicon MPS or CUDA)
-const FP16 = false; // Use half-precision (faster, slightly less accurate)
+// faster-whisper Configuration
+const WHISPER_MODEL = 'large-v3'; // Options: tiny, base, small, medium, large-v2, large-v3
+const USE_GPU = false; // Set to true for CUDA GPU acceleration (requires NVIDIA GPU)
+const COMPUTE_TYPE = 'int8'; // Options: int8, float16, float32 (int8 is fastest for CPU)
+const BEAM_SIZE = 5; // Higher = more accurate but slower (1-10, default: 5)
 const NUM_WORKERS = 4; // Number of CPU workers for preprocessing
 
 async function transcribe() {
-	console.log('🎬 Starting transcription with Whisper...');
+	console.log('🎬 Starting transcription with faster-whisper...');
+	console.log(`📊 Model: ${WHISPER_MODEL}`);
+	console.log(`🖥️  Device: ${USE_GPU ? 'GPU (CUDA)' : 'CPU'}`);
+	console.log(`⚡ Compute Type: ${COMPUTE_TYPE}`);
+	console.log(`🎯 Beam Size: ${BEAM_SIZE}`);
 
 	if (TEST_MODE) {
 		const startMin = Math.floor(TEST_START_TIME / 60);
 		const endMin = Math.floor((TEST_START_TIME + TEST_DURATION) / 60);
 		console.log(
-			`⚠️  TEST MODE: Transcribing ${
+			`\n⚠️  TEST MODE: Transcribing ${
 				TEST_DURATION / 60
 			} minutes (${startMin}:00 to ${endMin}:00)`
 		);
-		console.log(`📊 Using Whisper model: ${WHISPER_MODEL}`);
-		console.log('This should take 1-5 minutes.\n');
+		console.log('This should take 1-3 minutes.\n');
 	} else {
-		console.log('This may take 10-20 minutes for a 40-minute episode.\n');
+		console.log('\nThis may take 5-15 minutes for a 40-minute episode.');
+		console.log('(Much faster than openai-whisper!)\n');
 	}
 
 	// Check if video exists
@@ -81,41 +86,111 @@ async function transcribe() {
 			videoToTranscribe = testClipPath;
 		}
 
-		// Build Whisper command with performance optimizations
-		let command = `whisper "${videoToTranscribe}" --model ${WHISPER_MODEL} --language Turkish --output_format srt --output_dir "${SUBTITLE_DIR}"`;
+		// Create Python script for faster-whisper
+		const pythonScript = `
+from faster_whisper import WhisperModel
+import sys
+import os
 
-		// Add GPU acceleration
-		if (USE_GPU) {
-			command += ` --device mps`; // Use 'cuda' for NVIDIA, 'mps' for Apple Silicon
-			console.log('🚀 GPU acceleration enabled (Metal Performance Shaders)');
-		}
+# Configuration
+model_size = "${WHISPER_MODEL}"
+device = "${USE_GPU ? 'cuda' : 'cpu'}"
+compute_type = "${COMPUTE_TYPE}"
+beam_size = ${BEAM_SIZE}
+num_workers = ${NUM_WORKERS}
 
-		// Add half-precision for faster processing
-		if (FP16) {
-			command += ` --fp16 True`;
-			console.log('⚡ Half-precision (FP16) enabled');
-		}
+video_path = """${videoToTranscribe}"""
+subtitle_path = """${SUBTITLE_PATH}"""
 
-		// Add threading for preprocessing
-		command += ` --threads ${NUM_WORKERS}`;
-		console.log(`🧵 Using ${NUM_WORKERS} CPU threads for audio preprocessing`);
+print(f"Loading model: {model_size}")
+print(f"Device: {device}, Compute type: {compute_type}\\n")
 
-		console.log('\nRunning Whisper:', command);
-		const { stdout, stderr } = await execAsync(command, { maxBuffer: 10 * 1024 * 1024 });
+try:
+    # Load model
+    model = WhisperModel(model_size, device=device, compute_type=compute_type, num_workers=num_workers)
+
+    # Transcribe
+    print("Starting transcription...")
+    segments, info = model.transcribe(
+        video_path,
+        language="tr",  # Turkish
+        beam_size=beam_size,
+        vad_filter=True,  # Voice Activity Detection - skip silence
+        vad_parameters=dict(min_silence_duration_ms=500)
+    )
+
+    print(f"Detected language: '{info.language}' (probability: {info.language_probability:.2f})")
+    print(f"Duration: {info.duration:.1f} seconds\\n")
+
+    # Generate SRT format
+    print("Generating SRT file...")
+    srt_content = []
+    segment_id = 1
+
+    for segment in segments:
+        start_time = segment.start
+        end_time = segment.end
+        text = segment.text.strip()
+
+        # Convert seconds to SRT time format (HH:MM:SS,mmm)
+        def format_timestamp(seconds):
+            hours = int(seconds // 3600)
+            minutes = int((seconds % 3600) // 60)
+            secs = int(seconds % 60)
+            millis = int((seconds % 1) * 1000)
+            return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
+
+        srt_content.append(str(segment_id))
+        srt_content.append(f"{format_timestamp(start_time)} --> {format_timestamp(end_time)}")
+        srt_content.append(text)
+        srt_content.append("")
+        segment_id += 1
+
+    # Write SRT file
+    os.makedirs(os.path.dirname(subtitle_path), exist_ok=True)
+    with open(subtitle_path, "w", encoding="utf-8") as f:
+        f.write("\\n".join(srt_content))
+
+    print(f"\\n✓ Transcription complete!")
+    print(f"✓ Total segments: {segment_id - 1}")
+    print(f"✓ Saved to: {subtitle_path}")
+
+except Exception as e:
+    print(f"\\n✗ Error: {e}", file=sys.stderr)
+    sys.exit(1)
+`;
+
+		const tempScriptPath = path.join(TEMP_DIR, 'transcribe_faster_whisper.py');
+
+		// Write Python script
+		console.log('📝 Creating Python transcription script...');
+		fs.writeFileSync(tempScriptPath, pythonScript);
+
+		console.log('🚀 Running faster-whisper transcription...\n');
+		const startTime = Date.now();
+
+		const { stdout, stderr } = await execAsync(`python3 "${tempScriptPath}"`, {
+			maxBuffer: 10 * 1024 * 1024,
+		});
+
+		const duration = ((Date.now() - startTime) / 1000).toFixed(1);
 
 		console.log(stdout);
 		if (stderr) console.error('Warnings:', stderr);
 
-		// Rename subtitle file if using test clip
+		// Clean up temp script
+		fs.unlinkSync(tempScriptPath);
+
+		// Clean up test clip if it exists
 		if (TEST_MODE) {
-			const testSrtPath = path.join(SUBTITLE_DIR, 'test-clip.srt');
-			if (fs.existsSync(testSrtPath)) {
-				fs.renameSync(testSrtPath, SUBTITLE_PATH);
+			const testClipPath = path.join(TEMP_DIR, 'test-clip.mp4');
+			if (fs.existsSync(testClipPath)) {
+				fs.unlinkSync(testClipPath);
 			}
 		}
 
-		console.log('\n✅ Transcription complete!');
-		console.log(`📄 Subtitle file created: ${SUBTITLE_PATH}`);
+		console.log(`\n⏱️  Total time: ${duration} seconds`);
+		console.log(`📄 Subtitle file: ${SUBTITLE_PATH}`);
 
 		if (TEST_MODE) {
 			const startMin = Math.floor(TEST_START_TIME / 60);
@@ -123,10 +198,14 @@ async function transcribe() {
 			console.log(
 				`\n⚠️  TEST MODE: Transcribed ${
 					TEST_DURATION / 60
-				} minutes (${startMin}:00 to ${endMin}:00) using '${WHISPER_MODEL}' model`
+				} minutes (${startMin}:00 to ${endMin}:00)`
 			);
 			console.log('\n💡 To test different quality levels:');
-			console.log('   - Change WHISPER_MODEL to: tiny, base, small, medium, or large');
+			console.log(
+				'   - Change WHISPER_MODEL to: tiny, base, small, medium, large-v2, large-v3'
+			);
+			console.log('   - Set USE_GPU = true if you have NVIDIA GPU with CUDA');
+			console.log('   - Set COMPUTE_TYPE to float16 for better quality (slower)');
 			console.log('   - Set TEST_MODE = false to transcribe full video');
 		}
 
@@ -142,13 +221,17 @@ async function transcribe() {
 		console.error('❌ Transcription failed:', error.message);
 
 		// Enhanced troubleshooting
-		console.log('\nTroubleshooting:');
-		console.log('1. Make sure Whisper is installed: pip3 install openai-whisper');
-		console.log('2. Make sure FFmpeg is installed: brew install ffmpeg');
-		console.log('3. Make sure video file exists at:', VIDEO_PATH);
-		console.log('4. Try with smaller model: --model tiny or --model base');
-		console.log('5. If GPU fails, set USE_GPU = false to use CPU only');
-		console.log('6. Update Whisper for GPU support: pip3 install --upgrade openai-whisper');
+		console.log('\n🔧 Troubleshooting:');
+		console.log('1. Install faster-whisper: pip3 install faster-whisper');
+		console.log('2. Install FFmpeg: brew install ffmpeg (macOS) or apt install ffmpeg (Linux)');
+		console.log('3. Verify video exists at:', VIDEO_PATH);
+		console.log('4. Try smaller model: Set WHISPER_MODEL = "small" or "base"');
+		console.log('5. Try CPU only: Set USE_GPU = false');
+		console.log('6. For GPU: pip3 install faster-whisper[cuda] (NVIDIA only)');
+		console.log('7. Check Python: python3 -c "from faster_whisper import WhisperModel"');
+		console.log('\n💡 Model sizes (smallest to largest):');
+		console.log('   tiny < base < small < medium < large-v2 < large-v3');
+		console.log('   (larger = better quality but slower)');
 		process.exit(1);
 	}
 }
