@@ -14,22 +14,26 @@ const TEMP_DIR = path.join(__dirname, '../../data/temp');
 
 // Configuration
 const TEST_MODE = true; // Set to true to transcribe a sample segment
-const TEST_START_TIME = 480; // Start at 8:00 (8 minutes * 60 seconds)
-const TEST_DURATION = 120; // Extract 2 minutes (from 8:00 to 10:00)
+const TEST_START_TIME = 120; // Start at 2:00 (2 minutes * 60 seconds)
+const TEST_DURATION = 600; // Extract 10 minutes (from 2:00 to 12:00)
 
-// faster-whisper Configuration
+// faster-whisper Configuration - M1 Pro Optimized
 const WHISPER_MODEL = 'large-v3'; // Options: tiny, base, small, medium, large-v2, large-v3
 const USE_GPU = false; // Set to true for CUDA GPU acceleration (requires NVIDIA GPU)
 const COMPUTE_TYPE = 'int8'; // Options: int8, float16, float32 (int8 is fastest for CPU)
 const BEAM_SIZE = 5; // Higher = more accurate but slower (1-10, default: 5)
-const NUM_WORKERS = 4; // Number of CPU workers for preprocessing
+const NUM_WORKERS = 8; // M1 Pro has 8-10 cores, use 8 for optimal performance
+const VAD_THRESHOLD = 0.5; // Voice Activity Detection threshold (0.0-1.0, higher = more aggressive silence skipping)
+const MIN_SILENCE_DURATION = 500; // Minimum silence duration in ms to skip (lower = faster but may cut speech)
 
 async function transcribe() {
 	console.log('🎬 Starting transcription with faster-whisper...');
 	console.log(`📊 Model: ${WHISPER_MODEL}`);
-	console.log(`🖥️  Device: ${USE_GPU ? 'GPU (CUDA)' : 'CPU'}`);
+	console.log(`🖥️  Device: ${USE_GPU ? 'GPU (CUDA)' : 'CPU (Apple M1 Pro optimized)'}`);
 	console.log(`⚡ Compute Type: ${COMPUTE_TYPE}`);
 	console.log(`🎯 Beam Size: ${BEAM_SIZE}`);
+	console.log(`👷 Workers: ${NUM_WORKERS} (parallel processing)`);
+	console.log(`🔇 VAD Threshold: ${VAD_THRESHOLD} (silence detection)`);
 
 	if (TEST_MODE) {
 		const startMin = Math.floor(TEST_START_TIME / 60);
@@ -91,6 +95,8 @@ async function transcribe() {
 from faster_whisper import WhisperModel
 import sys
 import os
+import time
+from datetime import datetime
 
 # Configuration
 model_size = "${WHISPER_MODEL}"
@@ -98,39 +104,59 @@ device = "${USE_GPU ? 'cuda' : 'cpu'}"
 compute_type = "${COMPUTE_TYPE}"
 beam_size = ${BEAM_SIZE}
 num_workers = ${NUM_WORKERS}
+vad_threshold = ${VAD_THRESHOLD}
+min_silence_duration = ${MIN_SILENCE_DURATION}
 
 video_path = """${videoToTranscribe}"""
 subtitle_path = """${SUBTITLE_PATH}"""
 
 print(f"Loading model: {model_size}")
-print(f"Device: {device}, Compute type: {compute_type}\\n")
+print(f"Device: {device}, Compute type: {compute_type}")
+print(f"Workers: {num_workers}, VAD threshold: {vad_threshold}\\n")
 
 try:
     # Load model
     model = WhisperModel(model_size, device=device, compute_type=compute_type, num_workers=num_workers)
 
     # Transcribe
-    print("Starting transcription...")
+    print(f"🕐 Start Time: {datetime.now().strftime('%H:%M:%S')}")
+    print("Starting transcription...\\n")
+
+    transcription_start = time.time()
     segments, info = model.transcribe(
         video_path,
         language="tr",  # Turkish
         beam_size=beam_size,
         vad_filter=True,  # Voice Activity Detection - skip silence
-        vad_parameters=dict(min_silence_duration_ms=500)
+        vad_parameters=dict(
+            threshold=vad_threshold,
+            min_silence_duration_ms=min_silence_duration
+        ),
+        word_timestamps=False,  # Disable for faster processing
+        condition_on_previous_text=True  # Better accuracy for conversational content
     )
 
     print(f"Detected language: '{info.language}' (probability: {info.language_probability:.2f})")
     print(f"Duration: {info.duration:.1f} seconds\\n")
 
-    # Generate SRT format
+    # Generate SRT format with progress
     print("Generating SRT file...")
     srt_content = []
     segment_id = 1
+    total_duration = info.duration
+    last_progress = 0
 
     for segment in segments:
         start_time = segment.start
         end_time = segment.end
         text = segment.text.strip()
+
+        # Show progress every 10%
+        progress = int((end_time / total_duration) * 100)
+        if progress >= last_progress + 10 and progress <= 100:
+            elapsed = time.time() - transcription_start
+            print(f"⏳ Progress: {progress}% ({int(end_time)}/{int(total_duration)}s) - Elapsed: {elapsed:.1f}s")
+            last_progress = progress
 
         # Convert seconds to SRT time format (HH:MM:SS,mmm)
         def format_timestamp(seconds):
@@ -146,6 +172,9 @@ try:
         srt_content.append("")
         segment_id += 1
 
+    transcription_end = time.time()
+    total_time = transcription_end - transcription_start
+
     # Write SRT file
     os.makedirs(os.path.dirname(subtitle_path), exist_ok=True)
     with open(subtitle_path, "w", encoding="utf-8") as f:
@@ -154,6 +183,8 @@ try:
     print(f"\\n✓ Transcription complete!")
     print(f"✓ Total segments: {segment_id - 1}")
     print(f"✓ Saved to: {subtitle_path}")
+    print(f"🕐 End Time: {datetime.now().strftime('%H:%M:%S')}")
+    print(f"⏱️  Processing Time: {total_time:.1f} seconds")
 
 except Exception as e:
     print(f"\\n✗ Error: {e}", file=sys.stderr)
@@ -206,9 +237,11 @@ except Exception as e:
 			);
 			console.log('   - Set USE_GPU = true if you have NVIDIA GPU with CUDA');
 			console.log('   - Set COMPUTE_TYPE to float16 for better quality (slower)');
+			console.log('   - Adjust NUM_WORKERS (current: 8 for M1 Pro)');
+			console.log('   - Adjust BEAM_SIZE (1=fastest, 5=balanced, 10=most accurate)');
+			console.log('   - Adjust VAD_THRESHOLD (0.3=less aggressive, 0.7=more aggressive)');
 			console.log('   - Set TEST_MODE = false to transcribe full video');
 		}
-
 		console.log(
 			'\n⚠️  IMPORTANT: Please review and manually correct the subtitle file before proceeding!'
 		);

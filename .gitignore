@@ -5,3 +5,4 @@ backend/database.db
 .DS_Store
 *.log
 .env
+data/
