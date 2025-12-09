@@ -24,7 +24,7 @@ Liste falan yok.
 
 7
 00:03:40,139 --> 00:03:41,180
-Beş Türkçen'i tanımam ben.
+Behiç Türkcan'ı tanımam ben.
 
 8
 00:03:41,319 --> 00:03:42,500
@@ -60,7 +60,7 @@ Ayın on beşinde başlayacak.
 
 16
 00:03:58,939 --> 00:04:01,080
-İletişim ürünlükli puanının ziyaretçileri
+İletişim 2002 Fuarı'nın ziyaretçileri
 
 17
 00:04:01,080 --> 00:04:03,039
@@ -68,7 +68,7 @@ yaklaşıyor. Son iki yüz metre.
 
 18
 00:04:03,159 --> 00:04:04,080
-Orta şeritle. Tamam.
+Orta şeritte. Tamam.
 
 19
 00:04:04,780 --> 00:04:05,259
@@ -104,7 +104,7 @@ Tamam. Anlaşıldı patron.
 
 27
 00:04:21,360 --> 00:04:21,879
-Bakajı açın.
+Bagajı açın.
 
 28
 00:04:23,019 --> 00:04:30,699
@@ -152,7 +152,7 @@ Hem de Allah'ına kadar.
 
 39
 00:04:54,199 --> 00:04:56,399
-Pentepe'de adımız Behiç Türkçay.
+En tepede adımız Behiç Türkcan.
 
 40
 00:04:57,480 --> 00:04:58,620
@@ -248,7 +248,7 @@ Arama yapıyoruz. Lütfen araçla iner misiniz?
 
 63
 00:05:55,629 --> 00:05:57,629
-Adım Behiç Türkçay.
+Adım Behiç Türkcan.
 
 64
 00:05:57,629 --> 00:05:59,790
@@ -680,7 +680,7 @@ Yer olay yerine geldik.
 
 171
 00:16:17,519 --> 00:16:29,080
-Sarıcı bey geliyor mu?
+Savcı bey geliyor mu?
 
 172
 00:16:29,080 --> 00:16:30,080
@@ -772,11 +772,11 @@ Biz de peşlerinden öyle gidiyoruz.
 
 194
 00:17:03,340 --> 00:17:04,339
-Cenazeli vazımatçısına döndük anasını satayım.
+Cenaze levazımatçısına döndük anasını satayım.
 
 195
 00:17:04,339 --> 00:17:05,339
-Bir zamanların kumarhaneler kralı Önder Zülfi Koşar, dün gece geç saatlerde uğradığı
+Bir zamanların kumarhaneler kralı Önder Zülfü Koşar, dün gece geç saatlerde uğradığı
 
 196
 00:17:05,339 --> 00:17:06,339
@@ -860,7 +860,7 @@ Büyük hesaplaşma.
 
 216
 00:17:57,720 --> 00:17:59,119
-Beyiş Türkcan kaçırıldı.
+Behiç Türkcan kaçırıldı.
 
 217
 00:18:03,500 --> 00:18:04,900
@@ -1100,7 +1100,7 @@ Ailesine sabır ve metanetle.
 
 276
 00:23:02,190 --> 00:23:04,259
-İş dünyasının başı sağlıklı.
+İş dünyasının başı sağ olsun.
 
 277
 00:23:04,259 --> 00:23:06,259
@@ -1324,7 +1324,7 @@ Daha dikkatli olmalıydın.
 
 332
 00:28:56,990 --> 00:28:58,990
-Gerçek bir operasyonda kimse gözlerini yaşamakmaz.
+Gerçek bir operasyonda kimse gözünün yaşına bakmaz.
 
 333
 00:28:58,990 --> 00:29:01,700
@@ -1824,7 +1824,7 @@ Ama gerçek.
 
 457
 00:38:31,889 --> 00:38:36,769
-Teşkilat-ı muhassadan beri bu işler...
+Teşkilat-ı Mahsusa'dan beri bu işler...
 
 458
 00:38:36,769 --> 00:38:38,769
@@ -1836,7 +1836,7 @@ Bundan sonra da değişmesini bekleme.
 
 460
 00:38:41,920 --> 00:38:45,139
-Teşkilat-ı girerken...
+Teşkilata girerken...
 
 461
 00:38:45,139 --> 00:38:47,139
@@ -1920,7 +1920,7 @@ Kendimi bildim bileli. Hep sen.
 
 481
 00:41:47,820 --> 00:41:49,820
-Her şey için teşekkür ederim. Allah'a ısmarladın.
+Her şey için teşekkür ederim. Allah'a ısmarladık.
 
 482
 00:41:49,820 --> 00:41:51,889
@@ -1952,11 +1952,11 @@ Sen yoksun. Artık Elif de yok.
 
 489
 00:42:19,659 --> 00:42:21,659
-Bütün sevdiklerine vedalaş.
+Bütün sevdiklerinle vedalaş.
 
 490
 00:42:21,659 --> 00:42:52,849
-Bütün sevdiklerine.
+Bütün sevdiklerinle.
 
 491
 00:42:52,849 --> 00:42:56,190
@@ -2600,7 +2600,7 @@ Kesinlikle yok.
 
 651
 00:50:20,369 --> 00:50:21,750
-Göreyim seni. Vahvet onları.
+Göreyim seni. Mahvet onları.
 
 652
 00:50:22,010 --> 00:50:22,670
@@ -2716,7 +2716,7 @@ Ya benim gitmem lazım.
 
 680
 00:51:51,260 --> 00:51:52,280
-Akşam sevgiler veririm.
+Akşam haber veririm.
 
 681
 00:51:52,780 --> 00:51:53,699
@@ -3868,15 +3868,14 @@ Sadece evet de.
 
 968
 01:07:12,239 --> 01:07:16,989
-Elimi ver bana.
+Elini ver bana.
 
 969
 01:07:18,989 --> 01:07:24,769
-Yıldızlar şahidim olur.
+Yıldızlar şahidim olun.
 
 970
 01:07:24,769 --> 01:07:27,309
-Kum sağı, dalga sesleri.
 
 971
 01:07:27,309 --> 01:07:29,309
@@ -3884,7 +3883,7 @@ Gökyüzü ve rüzgar.
 
 972
 01:07:29,309 --> 01:07:31,309
-Sizler de şahidim olur.
+Sizler de şahidim olun.
 
 973
 01:07:31,309 --> 01:07:33,630
@@ -3948,7 +3947,7 @@ Hoşçakal.
 
 988
 01:12:05,149 --> 01:12:34,220
-Beş Türkçe.
+Behiç Türkcan.
 
 989
 01:12:34,220 --> 01:12:36,510
@@ -4000,7 +3999,7 @@ Terörü yavaşladıktan sonra eski Sovyet Cumhuriyetlerinden sağladığı sila
 
 1001
 01:13:06,560 --> 01:13:08,720
-Oldukça ruhani bir topluluk.
+Oldukça iyi organize bir topluluk.
 
 1002
 01:13:08,720 --> 01:13:10,720
@@ -4076,23 +4075,23 @@ Her üye belirli bir faaliyetten sorumlu.
 
 1020
 01:13:50,829 --> 01:13:52,829
-Uyuşturucu işlerin üç reva bakıyor.
+Uyuşturucu işlerine üç kişi bakıyor.
 
 1021
 01:13:52,829 --> 01:13:55,119
-Silah kaçakçılığı Lazya'dan soruluyor.
+Silah kaçakçılığı Laz Ziya'dan soruluyor.
 
 1022
 01:13:55,119 --> 01:13:58,180
-Silah kaçakçılığı Lazya'dan soruluyor.
+Silah kaçakçılığı Laz Ziya'dan soruluyor.
 
 1023
 01:13:58,180 --> 01:14:00,939
-Kumarhaneler tombalca Mehmet'e bağlı.
+Kumarhaneler Tombalacı Mehmet'e bağlı.
 
 1024
 01:14:00,939 --> 01:14:02,939
-İnfazları test processo Testeri Necmi ve ekibry yapıyor.
+İnfazları Testere Necmi ve ekibi yapıyor.
 
 1025
 01:14:02,939 --> 01:14:05,170
@@ -4100,7 +4099,7 @@ Tabi bunların hepsi kod isimler.
 
 1026
 01:14:06,380 --> 01:14:10,319
-Samuel Vanum'un borsa manipülasyonları ve dış ilişkilerden sorumlu.
+Samuel Vanunu borsa manipülasyonları ve dış ilişkilerden sorumlu.
 
 1027
 01:14:11,229 --> 01:14:12,890
@@ -4216,7 +4215,7 @@ Kayıt dışı diğer gelirleriyle birlikte konseyin kontrol ettiği para yakla�
 
 1055
 01:15:34,380 --> 01:15:36,409
-Milli gelinin yarısından daha fazla.
+Milli gelirin yarısından daha fazla.
 
 1056
 01:15:36,409 --> 01:15:38,819
@@ -4256,7 +4255,7 @@ Ve iktidar olur.
 
 1065
 01:16:19,140 --> 01:16:25,140
-Donbalacı Mehmet kardeşimiz konseyimize kabul edilmek üzere dışarıda emirlerinizi bekliyor.
+Tombalacı Mehmet kardeşimiz konseyimize kabul edilmek üzere dışarıda emirlerinizi bekliyor.
 
 1066
 01:16:25,140 --> 01:16:27,140
@@ -4276,7 +4275,7 @@ Buyur Hüsrev Ağa.
 
 1070
 01:16:37,180 --> 01:16:41,180
-Donbalacı Mehmet alemde sicili temiz bir arkadaşımızdır.
+Tombalacı Mehmet alemde sicili temiz bir arkadaşımızdır.
 
 1071
 01:16:41,180 --> 01:16:43,180
@@ -4296,7 +4295,7 @@ Düşmanları dahi mertliğine kefil olurlar ki bu aramızı alacağımız biri 
 
 1075
 01:16:58,779 --> 01:17:04,270
-Buyur Lazı'ya.
+Buyur Laz Ziya.
 
 1076
 01:17:04,270 --> 01:17:06,979
@@ -4304,11 +4303,11 @@ Buyur Lazı'ya.
 
 1077
 01:17:06,979 --> 01:17:09,979
-Bir arkadaşın taşıma işini yaptı Donbalacı.
+Bir arkadaşın taşıma işini yaptı Tombalacı.
 
 1078
 01:17:09,979 --> 01:17:11,979
-O vakitler henüz tazeleni kaldı.
+O vakitler henüz tazeydi.
 
 1079
 01:17:11,979 --> 01:17:13,979
@@ -4324,7 +4323,7 @@ Haftalarca işkence, falaka.
 
 1082
 01:17:19,979 --> 01:17:21,979
-Donbalacı'nın gıkı çıkmadı.
+Tombalacı'nın gıkı çıkmadı.
 
 1083
 01:17:21,979 --> 01:17:25,039
@@ -4340,7 +4339,7 @@ Evet Necmi kardeş.
 
 1086
 01:17:34,390 --> 01:17:36,390
-Donbalacı Mehmet'i ben de tanırım.
+Tombalacı Mehmet'i ben de tanırım.
 
 1087
 01:17:36,390 --> 01:17:39,390
@@ -4356,7 +4355,7 @@ Aynı zamanda güler yüzlü ve sıcak.
 
 1090
 01:17:43,390 --> 01:17:47,390
-Anlaşmazlık hukukunda aklını kullanır, su yoluyla çözmeye gider.
+Anlaşmazlık hukukunda aklını kullanır, sulh yoluyla çözmeye gider.
 
 1091
 01:17:47,390 --> 01:17:54,930
@@ -4372,7 +4371,7 @@ Arkadaşlar gerekeni söyledi efendim.
 
 1094
 01:17:58,930 --> 01:18:08,340
-Sonuç olarak Donbalacı Mehmet yaptığımız incelemeler sonucunda bize göre konseyimize katılma hakkını kazanmıştır.
+Sonuç olarak Tombalacı Mehmet yaptığımız incelemeler sonucunda bize göre konseyimize katılma hakkını kazanmıştır.
 
 1095
 01:18:08,340 --> 01:18:10,340
