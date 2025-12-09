@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import ffmpeg from 'fluent-ffmpeg';
-import { parseSync } from 'subtitle';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -12,7 +11,7 @@ const CLIPS_DIR = path.join(__dirname, '../../data/clips');
 
 const MAX_CLIP_DURATION = 9;
 const CONTEXT_PADDING = 2;
-const TEST_MODE = true;
+const TEST_MODE = false;
 const MAX_TEST_CLIPS = 50;
 
 function normalizeTurkish(text) {
@@ -31,7 +30,40 @@ function parseSubtitles() {
 		process.exit(1);
 	}
 	const srtContent = fs.readFileSync(SUBTITLE_PATH, 'utf-8');
-	const subtitles = parseSync(srtContent);
+
+	// Parse SRT manually (format: index, timestamp, text, blank line)
+	const subtitles = [];
+	const blocks = srtContent.trim().split(/\n\s*\n/);
+
+	for (const block of blocks) {
+		const lines = block.trim().split('\n');
+		if (lines.length < 3) continue;
+
+		// Line 1: index, Line 2: timestamp, Line 3+: text
+		const timestampLine = lines[1];
+		const match = timestampLine.match(
+			/(\d{2}):(\d{2}):(\d{2}),(\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2}),(\d{3})/
+		);
+
+		if (match) {
+			const startMs =
+				parseInt(match[1]) * 3600000 +
+				parseInt(match[2]) * 60000 +
+				parseInt(match[3]) * 1000 +
+				parseInt(match[4]);
+
+			const endMs =
+				parseInt(match[5]) * 3600000 +
+				parseInt(match[6]) * 60000 +
+				parseInt(match[7]) * 1000 +
+				parseInt(match[8]);
+
+			const text = lines.slice(2).join(' ').trim();
+
+			subtitles.push({ start: startMs, end: endMs, text });
+		}
+	}
+
 	console.log(`Found ${subtitles.length} subtitle entries\n`);
 	return subtitles;
 }
